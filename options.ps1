@@ -140,7 +140,7 @@ else { $LogFile = New-Item -Path "$($env:appdata)\Deletion` Sceduler\log.txt" -F
 
 $test = New-ScheduledTaskAction -Execute "$($env:appdata)\Deletion Sceduler\DS.exe" -WorkingDirectory $OpenFileDialog.FileName
 $yo = New-ScheduledTaskTrigger -At 12:00pm -Daily
-$task = Register-ScheduledTask -TaskName "Deletion Scheduler" -Trigger $yo -Action $test -Force
+$task = Register-ScheduledTask -TaskName "Deletion Scheduler $($diff.Days) days" -Trigger $yo -Action $test -Force
 
 $prompt = new-object -comobject wscript.shell 
 $answer = $prompt.popup("Delete files in $path created before $time ?`n", 90, "Deletion Scheduler", 4)   

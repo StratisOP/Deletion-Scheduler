@@ -1,22 +1,3 @@
-# .Net methods for hiding/showing the console in the background
-Add-Type -Name Window -Namespace Console -MemberDefinition '
-[DllImport("Kernel32.dll")]
-public static extern IntPtr GetConsoleWindow();
-
-[DllImport("user32.dll")]
-public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
-'
-function ShowConsole
-{
-    $consolePtr = [Console.Window]::GetConsoleWindow()
-    [Console.Window]::ShowWindow($consolePtr, 5)
-}function Hide-Console
-{
-    $consolePtr = [Console.Window]::GetConsoleWindow()
-    #0 hide
-    [Console.Window]::ShowWindow($consolePtr, 0)
-}
-Hide-Console
 $AssemblyFullName = 'System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
 $Assembly = [System.Reflection.Assembly]::Load($AssemblyFullName)
 $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
@@ -100,7 +81,6 @@ if ($result -eq [Windows.Forms.DialogResult]::OK) {
 	break
 }
 Copy-Item -Path .\*.ini -Destination $OpenFileDialog.FileName -Force
-#Copy-Item -Path .\DS.exe -Destination "$($env:appdata)\Deletion` Sceduler\" -Force
 $DS1 = '
 if (test-path DSoptions.ini) {
 	$diff = Get-Content DSoptions.ini -Tail 1 
@@ -143,7 +123,7 @@ else {
 	Exit
 }
 '
-$DS1 |Out-File .\DS1.ps1
+$DS1 | Out-File .\DS1.ps1
 invoke-ps2exe DS1.ps1 .\DS.exe -noConsole -title 'Deletion Scheduler' -version '0.1.0.5' -Verbose
 Move-Item -Path .\DS.exe -Destination "$($env:appdata)\Deletion` Sceduler\" -Force
 remove-item DS.exe -Force -ErrorAction Ignore

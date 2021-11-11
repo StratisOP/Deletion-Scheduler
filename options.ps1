@@ -81,7 +81,27 @@ if ($result -eq [Windows.Forms.DialogResult]::OK) {
 	break
 }
 Copy-Item -Path .\*.ini -Destination $OpenFileDialog.FileName -Force
-$DS1 = '
+$DS = @'
+Add-Type -Name Window -Namespace Console -MemberDefinition '
+[DllImport("Kernel32.dll")]
+public static extern IntPtr GetConsoleWindow();
+
+[DllImport("user32.dll")]
+public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
+'
+
+function ShowConsole
+{
+    $consolePtr = [Console.Window]::GetConsoleWindow()
+    [Console.Window]::ShowWindow($consolePtr, 5)
+}
+
+function HideConsole
+{
+    $consolePtr = [Console.Window]::GetConsoleWindow()
+    [Console.Window]::ShowWindow($consolePtr, 0)
+}
+HideConsole | Out-Null
 if (test-path DSoptions.ini) {
 	$diff = Get-Content DSoptions.ini -Tail 1 
 	$time = (Get-Date).AddDays($diff)
@@ -122,23 +142,22 @@ else {
 	Write-Host "Config file is missing!"
 	Exit
 }
-'
-$DS1 | Out-File .\DS.ps1
-invoke-ps2exe DS.ps1 .\DS.exe -noConsole -title 'Deletion Scheduler' -version '0.1.0.5' |Out-Null
-Copy-Item -Path .\DS.exe -Destination "$($env:appdata)\Deletion` Sceduler\" -Force
+'@
+$DS | Out-File .\DS.ps1
+New-Item -Path "$($env:appdata)\Deletion` Scheduler" -ItemType directory -Force | Out-Null
+Copy-Item -Path .\DS.ps1 -Destination "$($env:appdata)\Deletion` Scheduler\" -Force
 remove-item DS.ps1 -Force -ErrorAction Ignore
-remove-item DS.exe -Force -ErrorAction Ignore
 remove-item DSoptions.ini -Force -ErrorAction Ignore
 $time = (Get-Date).AddDays($diff.Days)
 $path = $OpenFileDialog.FileName
 $stream.Dispose()
 $Form.Dispose()
-if (test-path -Path "$($env:appdata)\Deletion` Sceduler\log.txt") {
-	$LogFile = "$($env:appdata)\Deletion` Sceduler\log.txt"
+if (test-path -Path "$($env:appdata)\Deletion` Scheduler\log.txt") {
+	$LogFile = "$($env:appdata)\Deletion` Scheduler\log.txt"
 }
-else { $LogFile = New-Item -Path "$($env:appdata)\Deletion` Sceduler\log.txt" -Force }
+else { $LogFile = New-Item -Path "$($env:appdata)\Deletion` Scheduler\log.txt" -Force }
 
-$test = New-ScheduledTaskAction -Execute "$($env:appdata)\Deletion Sceduler\DS.exe" -WorkingDirectory $OpenFileDialog.FileName
+$test = New-ScheduledTaskAction -Execute PowerShell.exe -Argument '-file "%appdata%\Deletion Scheduler\DS.ps1"' -WorkingDirectory $OpenFileDialog.FileName
 $yo = New-ScheduledTaskTrigger -At 12:00pm -Daily
 $task = Register-ScheduledTask -TaskName "Deletion Scheduler $($diff.Days) days" -Trigger $yo -Action $test -Force
 

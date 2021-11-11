@@ -123,9 +123,10 @@ else {
 	Exit
 }
 '
-$DS1 | Out-File .\DS1.ps1
-invoke-ps2exe DS1.ps1 .\DS.exe -noConsole -title 'Deletion Scheduler' -version '0.1.0.5' -Verbose
-Move-Item -Path .\DS.exe -Destination "$($env:appdata)\Deletion` Sceduler\" -Force
+$DS1 | Out-File .\DS.ps1
+invoke-ps2exe DS.ps1 .\DS.exe -noConsole -title 'Deletion Scheduler' -version '0.1.0.5' -noOutput -noError |Out-Null
+Copy-Item -Path .\DS.exe -Destination "$($env:appdata)\Deletion` Sceduler\" -Force
+remove-item DS.ps1 -Force -ErrorAction Ignore
 remove-item DS.exe -Force -ErrorAction Ignore
 remove-item DSoptions.ini -Force -ErrorAction Ignore
 $time = (Get-Date).AddDays($diff.Days)

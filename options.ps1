@@ -1,3 +1,22 @@
+# .Net methods for hiding/showing the console in the background
+Add-Type -Name Window -Namespace Console -MemberDefinition '
+[DllImport("Kernel32.dll")]
+public static extern IntPtr GetConsoleWindow();
+
+[DllImport("user32.dll")]
+public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
+'
+function ShowConsole
+{
+    $consolePtr = [Console.Window]::GetConsoleWindow()
+    [Console.Window]::ShowWindow($consolePtr, 5)
+}function Hide-Console
+{
+    $consolePtr = [Console.Window]::GetConsoleWindow()
+    #0 hide
+    [Console.Window]::ShowWindow($consolePtr, 0)
+}
+Hide-Console
 $AssemblyFullName = 'System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
 $Assembly = [System.Reflection.Assembly]::Load($AssemblyFullName)
 $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
@@ -81,7 +100,53 @@ if ($result -eq [Windows.Forms.DialogResult]::OK) {
 	break
 }
 Copy-Item -Path .\*.ini -Destination $OpenFileDialog.FileName -Force
-Copy-Item -Path .\DS.exe -Destination "$($env:appdata)\Deletion` Sceduler\" -Force
+#Copy-Item -Path .\DS.exe -Destination "$($env:appdata)\Deletion` Sceduler\" -Force
+$DS1 = '
+if (test-path DSoptions.ini) {
+	$diff = Get-Content DSoptions.ini -Tail 1 
+	$time = (Get-Date).AddDays($diff)
+	$path = Get-Content DSoptions.ini -Head 1
+	$LogFile = ".\log.txt"
+	$prompt = new-object -comobject wscript.shell 
+	$answer = $prompt.popup("Deleting files in $path created before $time`n", 90, "Deletion Scheduler", 1)   
+	if ($answer -eq 1) {
+		$files = Get-ChildItem -Path $path -Force -Recurse -exclude DSoptions.ini |
+		Where-Object { $_.CreationTime -lt $time }
+		foreach ($File in $Files) { 
+			if ($Null -ne $File) { 
+				$myDate = Get-Date -UFormat "%m-%d-%Y-%R "
+				$content = $myDate + $File.FullName
+				Add-Content $LogFile $content
+			} 
+		} 
+		Get-ChildItem -Path $path -Force -exclude DSoptions.ini |
+		Where-Object { $_.CreationTime -lt $time } |
+		Remove-Item  -Force -Recurse			
+	}if ($answer -eq -1) {
+		$files = Get-ChildItem -Path $path -Force -Recurse -exclude DSoptions.ini |
+		Where-Object { $_.CreationTime -lt $time }
+		foreach ($File in $Files) { 
+			if ($Null -ne $File) { 
+				$myDate = Get-Date -UFormat "%m-%d-%Y-%R "
+				$content = $myDate + $File.FullName
+				Add-Content $LogFile $content
+			} 
+		} 
+		Get-ChildItem -Path $path -Force -exclude DSoptions.ini |
+		Where-Object { $_.CreationTime -lt $time } |
+		Remove-Item  -Force -Recurse
+	}
+	else { break }
+}
+else {
+	Write-Host "Config file is missing!"
+	Exit
+}
+'
+$DS1 |Out-File .\DS1.ps1
+invoke-ps2exe DS1.ps1 .\DS.exe -noConsole -title 'Deletion Scheduler' -version '0.1.0.5' -Verbose
+Move-Item -Path .\DS.exe -Destination "$($env:appdata)\Deletion` Sceduler\" -Force
+remove-item DS.exe -Force -ErrorAction Ignore
 remove-item DSoptions.ini -Force -ErrorAction Ignore
 $time = (Get-Date).AddDays($diff.Days)
 $path = $OpenFileDialog.FileName

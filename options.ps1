@@ -157,9 +157,14 @@ if (test-path -Path "$($env:appdata)\Deletion` Scheduler\log.txt") {
 }
 else { $LogFile = New-Item -Path "$($env:appdata)\Deletion` Scheduler\log.txt" -Force }
 
+$last2parts = $($OpenFileDialog.FileName)
+$last2parts = $last2parts.replace('\','-')
+$last2parts = $last2parts.replace(':','')
+$last2parts = $last2parts.Split("-") | Select-Object -Last 3
+
 $test = New-ScheduledTaskAction -Execute PowerShell.exe -Argument '-file "%appdata%\Deletion Scheduler\DS.ps1"' -WorkingDirectory $OpenFileDialog.FileName
 $yo = New-ScheduledTaskTrigger -At 12:00pm -Daily
-$task = Register-ScheduledTask -TaskName "Deletion Scheduler $($diff.Days) days" -Trigger $yo -Action $test -Force
+$task = Register-ScheduledTask -TaskName "DeletionScheduler{$($last2parts -join "-" )}" -Description "Deleting files with creation date older than $($diff.Days) days at $($OpenFileDialog.FileName)" -Trigger $yo -Action $test -Force
 
 $prompt = new-object -comobject wscript.shell 
 $answer = $prompt.popup("Delete files in $path created before $time ?`n", 90, "Deletion Scheduler", 4)   

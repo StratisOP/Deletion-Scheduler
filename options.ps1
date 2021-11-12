@@ -38,11 +38,14 @@ $iconBytes = [Convert]::FromBase64String($iconBase64)
 $stream = [System.IO.MemoryStream]::new($iconBytes, 0, $iconBytes.Length)
 
 $form = New-Object Windows.Forms.Form -Property @{
-	StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
-	Size          = New-Object Drawing.Size 243, 230
-	Text          = 'Select a Date'
-	Topmost       = $true
-	Icon          = [System.Drawing.Icon]::FromHandle(([System.Drawing.Bitmap]::new($stream).GetHIcon()))
+	StartPosition   = [Windows.Forms.FormStartPosition]::CenterScreen
+	FormBorderStyle = 'FixedDialog'
+	MaximizeBox     = $false;
+	MinimizeBox     = $false;
+	Size            = New-Object Drawing.Size 233, 223
+	Text            = 'Select a Date'
+	Topmost         = $true
+	Icon            = [System.Drawing.Icon]::FromHandle(([System.Drawing.Bitmap]::new($stream).GetHIcon()))
 }
 
 $calendar = New-Object Windows.Forms.MonthCalendar -Property @{
@@ -52,7 +55,7 @@ $calendar = New-Object Windows.Forms.MonthCalendar -Property @{
 $form.Controls.Add($calendar)
 
 $okButton = New-Object Windows.Forms.Button -Property @{
-	Location     = New-Object Drawing.Point 38, 165
+	Location     = New-Object Drawing.Point 43, 165
 	Size         = New-Object Drawing.Size 75, 23
 	Text         = 'OK'
 	DialogResult = [Windows.Forms.DialogResult]::OK
@@ -61,7 +64,7 @@ $form.AcceptButton = $okButton
 $form.Controls.Add($okButton)
 
 $cancelButton = New-Object Windows.Forms.Button -Property @{
-	Location     = New-Object Drawing.Point 113, 165
+	Location     = New-Object Drawing.Point 118, 165
 	Size         = New-Object Drawing.Size 75, 23
 	Text         = 'Cancel'
 	DialogResult = [Windows.Forms.DialogResult]::Cancel
@@ -158,8 +161,8 @@ if (test-path -Path "$($env:appdata)\Deletion` Scheduler\log.txt") {
 else { $LogFile = New-Item -Path "$($env:appdata)\Deletion` Scheduler\log.txt" -Force }
 
 $last2parts = $($OpenFileDialog.FileName)
-$last2parts = $last2parts.replace('\','-')
-$last2parts = $last2parts.replace(':','')
+$last2parts = $last2parts.replace('\', '-')
+$last2parts = $last2parts.replace(':', '')
 $last2parts = $last2parts.Split("-") | Select-Object -Last 3
 
 $test = New-ScheduledTaskAction -Execute PowerShell.exe -Argument '-file "%appdata%\Deletion Scheduler\DS.ps1"' -WorkingDirectory $OpenFileDialog.FileName

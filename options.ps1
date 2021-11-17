@@ -268,12 +268,12 @@ function interval {
     $Form.Add_Shown({ $Form.Activate() })
     $intres = $Form.ShowDialog()
     if ($intres -eq 'Cancel') { break }
-    $global:interv
+    $global:dset=$minTimePicker.Text
 } 
 interval
 
 $TaskAction = New-ScheduledTaskAction -Execute PowerShell.exe -Argument '-file "%appdata%\Deletion Scheduler\DS.ps1"' -WorkingDirectory $OpenFileDialog.FileName
-$TaskTrigger = New-ScheduledTaskTrigger -At $minTimePicker.Text -Daily
+$TaskTrigger = New-ScheduledTaskTrigger -At $global:dset -Daily
 $TaskRegister = Register-ScheduledTask -TaskName "DeletionScheduler{$($last2parts -join "-" )}" -Description "Deleting files with creation date older than $time at $($OpenFileDialog.FileName)" -Trigger $TaskTrigger -Action $TaskAction -Force
 
 $prompt = new-object -comobject wscript.shell 

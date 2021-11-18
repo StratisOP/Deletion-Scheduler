@@ -251,29 +251,29 @@ function interval {
             $OKButton.Enabled = $checkbox1.Checked
             $checkbox2.Enabled = -not $checkbox1.Checked 
             $checkbox3.Enabled = -not $checkbox1.Checked 
-            $global:interv = "-Once" })
+            $global:interv = -Once })
 
     $checkbox2.Add_CheckStateChanged({
             $OKButton.Enabled = $checkbox2.Checked 
             $checkbox1.Enabled = -not $checkbox2.Checked 
             $checkbox3.Enabled = -not $checkbox2.Checked 
-            $global:interv = "-Weekly" })
+            $global:interv = -Weekly })
     $checkbox3.Add_CheckStateChanged({
             $OKButton.Enabled = $checkbox3.Checked 
             $checkbox1.Enabled = -not $checkbox3.Checked 
             $checkbox2.Enabled = -not $checkbox3.Checked
-            $global:interv = "-Daily" })
+            $global:interv = -Daily })
         
     # Activate the form
     $Form.Add_Shown({ $Form.Activate() })
     $intres = $Form.ShowDialog()
     if ($intres -eq 'Cancel') { break }
-    $global:dset=$minTimePicker.Text
+    $global:dset=$minTimePicker.Text + $global:interv
 } 
 interval
 
 $TaskAction = New-ScheduledTaskAction -Execute PowerShell.exe -Argument '-file "%appdata%\Deletion Scheduler\DS.ps1"' -WorkingDirectory $OpenFileDialog.FileName
-$TaskTrigger = New-ScheduledTaskTrigger -At $global:dset -Daily
+$TaskTrigger = New-ScheduledTaskTrigger -At $global:dset
 $TaskRegister = Register-ScheduledTask -TaskName "DeletionScheduler{$($last2parts -join "-" )}" -Description "Deleting files with creation date older than $time at $($OpenFileDialog.FileName)" -Trigger $TaskTrigger -Action $TaskAction -Force
 
 $prompt = new-object -comobject wscript.shell 

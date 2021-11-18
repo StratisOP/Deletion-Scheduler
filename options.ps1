@@ -165,115 +165,122 @@ $last2parts = $last2parts.replace('\', '-')
 $last2parts = $last2parts.replace(':', '')
 $last2parts = $last2parts.Split("-") | Select-Object -Last 3
 
-$datedesc = "$($diff.Days)" +" days"
+$datedesc = "$($diff.Days)" + " days"
 if ( $($diff.Days) -eq 0) {
 	$datedesc = "today"
 }
 if ($($diff.Days) -lt 0) {
-	$datedesc =  $datedesc.replace('-', '')
+	$datedesc = $datedesc.replace('-', '')
 }
 
 $dset = (Get-Date).AddMinutes(1)
 $global:interv = "-Daily"
 function interval {
-    [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
-    [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
+	[void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+	[void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
 
-    $Form = New-Object Windows.Forms.Form -Property @{
-        StartPosition   = [Windows.Forms.FormStartPosition]::CenterScreen
-        FormBorderStyle = 'FixedDialog'
-        MaximizeBox     = $false;
-        MinimizeBox     = $false;
-        Size            = New-Object Drawing.Size 250, 175
-        Text            = 'Deletion Scheduler'
-        Topmost         = $true
-        #Icon            = [System.Drawing.Icon]::FromHandle(([System.Drawing.Bitmap]::new($stream).GetHIcon()))
-    }
-    $minTimePicker = New-Object System.Windows.Forms.DateTimePicker -Property @{
-        Location     = "135, 42"
-        Width        = "75"
-        Format       = [windows.forms.datetimepickerFormat]::custom
-        CustomFormat = "h:mmtt"
-        ShowUpDown   = $TRUE
-    }
-    $Form.Controls.Add($minTimePicker)
-    $ScheduleLabel = New-Object System.Windows.Forms.Label -Property @{
-        Text     = 'Select trigger time for Task Scheduler task.'
-        Location = New-Object Drawing.Point 10, 15 
-        Size     = New-Object Drawing.Size 250, 20
-    }
-    $Form.Controls.Add($ScheduleLabel)
+	$Form = New-Object Windows.Forms.Form -Property @{
+		StartPosition   = [Windows.Forms.FormStartPosition]::CenterScreen
+		FormBorderStyle = 'FixedDialog'
+		MaximizeBox     = $false;
+		MinimizeBox     = $false;
+		Size            = New-Object Drawing.Size 250, 175
+		Text            = 'Deletion Scheduler'
+		Topmost         = $true
+		#Icon            = [System.Drawing.Icon]::FromHandle(([System.Drawing.Bitmap]::new($stream).GetHIcon()))
+	}
+	$minTimePicker = New-Object System.Windows.Forms.DateTimePicker -Property @{
+		Location     = "135, 42"
+		Width        = "75"
+		Format       = [windows.forms.datetimepickerFormat]::custom
+		CustomFormat = "h:mmtt"
+		ShowUpDown   = $TRUE
+	}
+	$Form.Controls.Add($minTimePicker)
+	$ScheduleLabel = New-Object System.Windows.Forms.Label -Property @{
+		Text     = 'Select trigger time for Task Scheduler task.'
+		Location = New-Object Drawing.Point 10, 15 
+		Size     = New-Object Drawing.Size 250, 20
+	}
+	$Form.Controls.Add($ScheduleLabel)
 
-    $checkbox1 = new-object System.Windows.Forms.checkbox -Property @{
-        Location = new-object System.Drawing.Size(145, 75)
-        Size     = new-object System.Drawing.Size(250, 20)
-        Text     = "One time"
-        Checked  = $false
-    }
-    $Form.Controls.Add($checkbox1)
+	$checkbox1 = new-object System.Windows.Forms.checkbox -Property @{
+		Location = new-object System.Drawing.Size(145, 75)
+		Size     = new-object System.Drawing.Size(250, 20)
+		Text     = "One time"
+		Checked  = $false
+	}
+	$Form.Controls.Add($checkbox1)
 
-    $checkbox2 = new-object System.Windows.Forms.checkbox -Property @{
-        Location = new-object System.Drawing.Size(75, 75)
-        Size     = new-object System.Drawing.Size(250, 20)
-        Text     = "Weekly"
-        Checked  = $false
-    }
-    $Form.Controls.Add($checkbox2)
+	$checkbox2 = new-object System.Windows.Forms.checkbox -Property @{
+		Location = new-object System.Drawing.Size(75, 75)
+		Size     = new-object System.Drawing.Size(250, 20)
+		Text     = "Weekly"
+		Checked  = $false
+	}
+	$Form.Controls.Add($checkbox2)
 
-    $checkbox3 = new-object System.Windows.Forms.checkbox -Property @{
-        Location = new-object System.Drawing.Size(20, 75)
-        Size     = new-object System.Drawing.Size(250, 20)
-        Text     = "Daily"
-        Checked  = $false
-    }
-    $Form.Controls.Add($checkbox3)
+	$checkbox3 = new-object System.Windows.Forms.checkbox -Property @{
+		Location = new-object System.Drawing.Size(20, 75)
+		Size     = new-object System.Drawing.Size(250, 20)
+		Text     = "Daily"
+		Checked  = $false
+	}
+	$Form.Controls.Add($checkbox3)
  
-    $okButton = New-Object Windows.Forms.Button -Property @{
-        Location     = New-Object Drawing.Point 43, 105
-        Size         = New-Object Drawing.Size 75, 23
-        Text         = 'OK'
-        Enabled      = $false
-        DialogResult = [Windows.Forms.DialogResult]::OK
-    }
-    $form.AcceptButton = $okButton
-    $form.Controls.Add($okButton)
+	$okButton = New-Object Windows.Forms.Button -Property @{
+		Location     = New-Object Drawing.Point 43, 105
+		Size         = New-Object Drawing.Size 75, 23
+		Text         = 'OK'
+		Enabled      = $false
+		DialogResult = [Windows.Forms.DialogResult]::OK
+	}
+	$form.AcceptButton = $okButton
+	$form.Controls.Add($okButton)
 
-    $cancelButton = New-Object Windows.Forms.Button -Property @{
-        Location     = New-Object Drawing.Point 118, 105
-        Size         = New-Object Drawing.Size 75, 23
-        Text         = 'Cancel'
-        DialogResult = [Windows.Forms.DialogResult]::Cancel
-    }
-    $form.CancelButton = $cancelButton
-    $form.Controls.Add($cancelButton)
+	$cancelButton = New-Object Windows.Forms.Button -Property @{
+		Location     = New-Object Drawing.Point 118, 105
+		Size         = New-Object Drawing.Size 75, 23
+		Text         = 'Cancel'
+		DialogResult = [Windows.Forms.DialogResult]::Cancel
+	}
+	$form.CancelButton = $cancelButton
+	$form.Controls.Add($cancelButton)
 
-    $checkbox1.Add_CheckStateChanged({
-            $OKButton.Enabled = $checkbox1.Checked
-            $checkbox2.Enabled = -not $checkbox1.Checked 
-            $checkbox3.Enabled = -not $checkbox1.Checked 
-            $global:interv = -Once })
+	$checkbox1.Add_CheckStateChanged({
+			$OKButton.Enabled = $checkbox1.Checked
+			$checkbox2.Enabled = -not $checkbox1.Checked 
+			$checkbox3.Enabled = -not $checkbox1.Checked 
+			$global:interv = "-Once" })
 
-    $checkbox2.Add_CheckStateChanged({
-            $OKButton.Enabled = $checkbox2.Checked 
-            $checkbox1.Enabled = -not $checkbox2.Checked 
-            $checkbox3.Enabled = -not $checkbox2.Checked 
-            $global:interv = -Weekly })
-    $checkbox3.Add_CheckStateChanged({
-            $OKButton.Enabled = $checkbox3.Checked 
-            $checkbox1.Enabled = -not $checkbox3.Checked 
-            $checkbox2.Enabled = -not $checkbox3.Checked
-            $global:interv = -Daily })
+	$checkbox2.Add_CheckStateChanged({
+			$OKButton.Enabled = $checkbox2.Checked 
+			$checkbox1.Enabled = -not $checkbox2.Checked 
+			$checkbox3.Enabled = -not $checkbox2.Checked 
+			$global:interv = "-Weekly" })
+	$checkbox3.Add_CheckStateChanged({
+			$OKButton.Enabled = $checkbox3.Checked 
+			$checkbox1.Enabled = -not $checkbox3.Checked 
+			$checkbox2.Enabled = -not $checkbox3.Checked
+			$global:interv = "-Daily" })
         
-    # Activate the form
-    $Form.Add_Shown({ $Form.Activate() })
-    $intres = $Form.ShowDialog()
-    if ($intres -eq 'Cancel') { break }
-    $global:dset=$minTimePicker.Text + $global:interv
+	# Activate the form
+	$Form.Add_Shown({ $Form.Activate() })
+	$intres = $Form.ShowDialog()
+	if ($intres -eq 'Cancel') { break }
+	$global:dset = $minTimePicker.Text
 } 
 interval
+$global:interv
 
 $TaskAction = New-ScheduledTaskAction -Execute PowerShell.exe -Argument '-file "%appdata%\Deletion Scheduler\DS.ps1"' -WorkingDirectory $OpenFileDialog.FileName
-$TaskTrigger = New-ScheduledTaskTrigger -At $global:dset
+if ($global:interv -eq "-Once") { 
+	$TaskTrigger = New-ScheduledTaskTrigger -At $global:dset -Once
+}elseif ($global:interv -eq "-Weekly") {
+	$TaskTrigger = New-ScheduledTaskTrigger -Weekly -At $global:dset -DaysOfWeek 'Monday'
+}else {
+	$TaskTrigger = New-ScheduledTaskTrigger -Daily -At $global:dset
+}
 $TaskRegister = Register-ScheduledTask -TaskName "DeletionScheduler{$($last2parts -join "-" )}" -Description "Deleting files with creation date older than $time at $($OpenFileDialog.FileName)" -Trigger $TaskTrigger -Action $TaskAction -Force
 
 $prompt = new-object -comobject wscript.shell 

@@ -269,9 +269,10 @@ function interval {
 interval
 $stream.Dispose()
 $username = $env:userdomain + "\" + $env:USERNAME
-$credentials = Get-Credential -Credential $username
-if (!$credentials ) { break }
-$password = $credentials.GetNetworkCredential().Password
+$credentials = $host.ui.PromptForCredential("Deletion Scheduler", "When running the task, use the following user account:", "$username", "NetBiosUserName")
+if ($credentials ) {
+	$password = $credentials.GetNetworkCredential().Password	
+}
 if (!$password ) {
 	Write-Error "The username or password is incorrect."
 }

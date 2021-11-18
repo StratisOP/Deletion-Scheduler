@@ -170,8 +170,6 @@ if ( $($diff.Days) -eq 0) {
 if ($($diff.Days) -lt 0) {
 	$datedesc = $datedesc.replace('-', '')
 }
-
-$dset = (Get-Date).AddMinutes(1)
 $global:interv = "-Daily"
 function interval {
 	[void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
@@ -182,7 +180,7 @@ function interval {
 		FormBorderStyle = 'FixedDialog'
 		MaximizeBox     = $false;
 		MinimizeBox     = $false;
-		Size            = New-Object Drawing.Size 250, 175
+		Size            = New-Object Drawing.Size 240, 175
 		Text            = 'Deletion Scheduler'
 		Topmost         = $true
 		Icon            = [System.Drawing.Icon]::FromHandle(([System.Drawing.Bitmap]::new($stream).GetHIcon()))
@@ -196,7 +194,7 @@ function interval {
 	}
 	$Form.Controls.Add($minTimePicker)
 	$ScheduleLabel = New-Object System.Windows.Forms.Label -Property @{
-		Text     = 'Select trigger time for Task Scheduler task.'
+		Text     = 'Select conditions to trigger the task.'
 		Location = New-Object Drawing.Point 10, 15 
 		Size     = New-Object Drawing.Size 250, 20
 	}
@@ -204,7 +202,7 @@ function interval {
 
 	$checkbox1 = new-object System.Windows.Forms.checkbox -Property @{
 		Location = new-object System.Drawing.Size(145, 75)
-		Size     = new-object System.Drawing.Size(250, 20)
+		Size     = new-object System.Drawing.Size(145, 20)
 		Text     = "One time"
 		Checked  = $false
 	}
@@ -212,7 +210,7 @@ function interval {
 
 	$checkbox2 = new-object System.Windows.Forms.checkbox -Property @{
 		Location = new-object System.Drawing.Size(75, 75)
-		Size     = new-object System.Drawing.Size(250, 20)
+		Size     = new-object System.Drawing.Size(60, 20)
 		Text     = "Weekly"
 		Checked  = $false
 	}
@@ -220,7 +218,7 @@ function interval {
 
 	$checkbox3 = new-object System.Windows.Forms.checkbox -Property @{
 		Location = new-object System.Drawing.Size(20, 75)
-		Size     = new-object System.Drawing.Size(250, 20)
+		Size     = new-object System.Drawing.Size(50, 20)
 		Text     = "Daily"
 		Checked  = $false
 	}
@@ -270,21 +268,26 @@ function interval {
 } 
 interval
 $stream.Dispose()
-$user = $env:USERNAME
+$username = $env:userdomain + "\" + $env:USERNAME
 $credentials = Get-Credential -Credential $username
+if (!$credentials ) { break }
 $password = $credentials.GetNetworkCredential().Password
-$TaskAction = New-ScheduledTaskAction -Execute PowerShell.exe -Argument '-file "%appdata%\Deletion Scheduler\DS.ps1"' -WorkingDirectory $OpenFileDialog.FileName
-if ($global:interv -eq "-Once") { 
-	$TaskTrigger = New-ScheduledTaskTrigger -At $global:dset -Once
-}
-elseif ($global:interv -eq "-Weekly") {
-	$TaskTrigger = New-ScheduledTaskTrigger -Weekly -At $global:dset -DaysOfWeek 'Monday'
+if (!$password ) {
+	Write-Error "The username or password is incorrect."
 }
 else {
-	$TaskTrigger = New-ScheduledTaskTrigger -Daily -At $global:dset
+	$TaskAction = New-ScheduledTaskAction -Execute PowerShell.exe -Argument '-file "%appdata%\Deletion Scheduler\DS.ps1"' -WorkingDirectory $OpenFileDialog.FileName
+	if ($global:interv -eq "-Once") { 
+		$TaskTrigger = New-ScheduledTaskTrigger -At $global:dset -Once
+	}
+	elseif ($global:interv -eq "-Weekly") {
+		$TaskTrigger = New-ScheduledTaskTrigger -Weekly -At $global:dset -DaysOfWeek 'Monday'
+	}
+	else {
+		$TaskTrigger = New-ScheduledTaskTrigger -Daily -At $global:dset
+	}
+	$TaskRegister = Register-ScheduledTask -TaskName "DeletionScheduler{$($last2parts -join "-" )}" -Description "Deleting files with creation date older than $time at $($OpenFileDialog.FileName)" -Trigger $TaskTrigger -Action $TaskAction -User $username -Password $password -Force
 }
-$TaskRegister = Register-ScheduledTask -TaskName "DeletionScheduler{$($last2parts -join "-" )}" -Description "Deleting files with creation date older than $time at $($OpenFileDialog.FileName)" -Trigger $TaskTrigger -Action $TaskAction -User $user -Password $password -Force
-
 $prompt = new-object -comobject wscript.shell 
 $answer = $prompt.popup("Delete files in $path created before $time ?`n", 90, "Deletion Scheduler", 4)   
 if ($answer -eq 6) {

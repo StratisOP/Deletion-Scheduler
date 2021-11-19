@@ -250,7 +250,6 @@ function interval {
 	}
 	$form.CancelButton = $cancelButton
 	$form.Controls.Add($cancelButton)
-
 	$checkbox1.Add_CheckStateChanged({
 			$OKButton.Enabled = $checkbox1.Checked
 			$checkbox2.Enabled = -not $checkbox1.Checked 
@@ -275,8 +274,6 @@ function interval {
 				$global:userstate = "Other"
 			}
 		})
-        
-	# Activate the form
 	$Form.Add_Shown({ $Form.Activate() })
 	$intres = $Form.ShowDialog()
 	if ($intres -eq 'Cancel') { break }

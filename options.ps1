@@ -228,7 +228,7 @@ function interval {
 		Location = new-object System.Drawing.Size(20, 42)
 		Size     = new-object System.Drawing.Size(90, 20)
 		Text     = "Current User"
-		Checked  = $false
+		Checked  = $true
 	}
 	$Form.Controls.Add($checkbox4)
  

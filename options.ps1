@@ -195,7 +195,7 @@ function interval {
 	$Form.Controls.Add($minTimePicker)
 	$ScheduleLabel = New-Object System.Windows.Forms.Label -Property @{
 		Text     = 'Select conditions to trigger the task.'
-		Location = New-Object Drawing.Point 10, 15 
+		Location = New-Object Drawing.Point 15, 15 
 		Size     = New-Object Drawing.Size 250, 20
 	}
 	$Form.Controls.Add($ScheduleLabel)
@@ -223,6 +223,14 @@ function interval {
 		Checked  = $false
 	}
 	$Form.Controls.Add($checkbox3)
+
+	$checkbox4 = new-object System.Windows.Forms.checkbox -Property @{
+		Location = new-object System.Drawing.Size(20, 42)
+		Size     = new-object System.Drawing.Size(90, 20)
+		Text     = "Current User"
+		Checked  = $false
+	}
+	$Form.Controls.Add($checkbox4)
  
 	$okButton = New-Object Windows.Forms.Button -Property @{
 		Location     = New-Object Drawing.Point 43, 105
@@ -259,6 +267,14 @@ function interval {
 			$checkbox1.Enabled = -not $checkbox3.Checked 
 			$checkbox2.Enabled = -not $checkbox3.Checked
 			$global:interv = "-Daily" })
+	$checkbox4.Add_CheckStateChanged({
+			if ($checkbox4.Checked -eq $true) {
+				$global:userstate = "Current"
+			}
+			else {
+				$global:userstate = "Other"
+			}
+		})
         
 	# Activate the form
 	$Form.Add_Shown({ $Form.Activate() })
@@ -268,13 +284,28 @@ function interval {
 } 
 interval
 $stream.Dispose()
-$username = $env:userdomain + "\" + $env:USERNAME
-$credentials = $host.ui.PromptForCredential("Deletion Scheduler", "When running the task, use the following user account:", "$username", "NetBiosUserName")
-if ($credentials ) {
-	$password = $credentials.GetNetworkCredential().Password	
-}
-if (!$password ) {
-	Write-Error "The username or password is incorrect."
+if ($global:userstate -eq "Other") {
+	$username = $env:userdomain + "\" + $env:USERNAME
+	$credentials = $host.ui.PromptForCredential("Deletion Scheduler", "When running the task, use the following user account:", "$username", "NetBiosUserName")
+	if ($credentials ) {
+		$password = $credentials.GetNetworkCredential().Password	
+	}
+	if (!$password ) {
+		Write-Error "The username or password is incorrect."
+	}
+	else {
+		$TaskAction = New-ScheduledTaskAction -Execute PowerShell.exe -Argument '-file "%appdata%\Deletion Scheduler\DS.ps1"' -WorkingDirectory $OpenFileDialog.FileName
+		if ($global:interv -eq "-Once") { 
+			$TaskTrigger = New-ScheduledTaskTrigger -At $global:dset -Once
+		}
+		elseif ($global:interv -eq "-Weekly") {
+			$TaskTrigger = New-ScheduledTaskTrigger -Weekly -At $global:dset -DaysOfWeek 'Monday'
+		}
+		else {
+			$TaskTrigger = New-ScheduledTaskTrigger -Daily -At $global:dset
+		}
+		$TaskRegister = Register-ScheduledTask -TaskName "DeletionScheduler{$($last2parts -join "-" )}" -Description "Deleting files with creation date older than $time at $($OpenFileDialog.FileName)" -Trigger $TaskTrigger -Action $TaskAction -User $username -Password $password -Force
+	}
 }
 else {
 	$TaskAction = New-ScheduledTaskAction -Execute PowerShell.exe -Argument '-file "%appdata%\Deletion Scheduler\DS.ps1"' -WorkingDirectory $OpenFileDialog.FileName
@@ -287,7 +318,7 @@ else {
 	else {
 		$TaskTrigger = New-ScheduledTaskTrigger -Daily -At $global:dset
 	}
-	$TaskRegister = Register-ScheduledTask -TaskName "DeletionScheduler{$($last2parts -join "-" )}" -Description "Deleting files with creation date older than $time at $($OpenFileDialog.FileName)" -Trigger $TaskTrigger -Action $TaskAction -User $username -Password $password -Force
+	$TaskRegister = Register-ScheduledTask -TaskName "DeletionScheduler{$($last2parts -join "-" )}" -Description "Deleting files with creation date older than $time at $($OpenFileDialog.FileName)" -Trigger $TaskTrigger -Action $TaskAction -Force
 }
 $prompt = new-object -comobject wscript.shell 
 $answer = $prompt.popup("Delete files in $path created before $time ?`n", 90, "Deletion Scheduler", 4)   

@@ -32,9 +32,9 @@ if ($Result -eq [System.Windows.Forms.DialogResult]::OK) {
 	Remove-Item  DSoptions.ini -Force -ErrorAction Ignore
 	break
 }
-if (test-path DSoptions.ini) { remove-item DSoptions.ini -Force }
-Write-Output $OpenFileDialog.FileName | out-file .\DSoptions.ini -Force
-(get-item DSoptions.ini).Attributes += 'Hidden'
+if (Test-Path DSoptions.ini) { Remove-Item DSoptions.ini -Force }
+Write-Output $OpenFileDialog.FileName | Out-File .\DSoptions.ini -Force
+(Get-Item DSoptions.ini).Attributes += 'Hidden'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
@@ -77,9 +77,9 @@ $result = $form.ShowDialog()
 
 if ($result -eq [Windows.Forms.DialogResult]::OK) {
 	$date = $calendar.SelectionStart
-	$current = Get-date
+	$current = Get-Date
 	$diff = New-TimeSpan -Start $current -End $date
-	$diff.Days | add-content .\DSoptions.ini
+	$diff.Days | Add-Content .\DSoptions.ini
 }if ($result -eq 'Cancel') { 
 	Remove-Item  DSoptions.ini -Force -ErrorAction Ignore
 	break
@@ -150,12 +150,12 @@ else {
 $DS | Out-File .\DS.ps1
 New-Item -Path "$($env:appdata)\Deletion` Scheduler" -ItemType directory -Force | Out-Null
 Copy-Item -Path .\DS.ps1 -Destination "$($env:appdata)\Deletion` Scheduler\" -Force
-remove-item DS.ps1 -Force -ErrorAction Ignore
-remove-item DSoptions.ini -Force -ErrorAction Ignore
+Remove-Item DS.ps1 -Force -ErrorAction Ignore
+Remove-Item DSoptions.ini -Force -ErrorAction Ignore
 $time = (Get-Date).AddDays($diff.Days)
 $path = $OpenFileDialog.FileName
 $Form.Dispose()
-if (test-path -Path "$($env:appdata)\Deletion` Scheduler\log.txt") {
+if (Test-Path -Path "$($env:appdata)\Deletion` Scheduler\log.txt") {
 	$LogFile = "$($env:appdata)\Deletion` Scheduler\log.txt"
 }
 else { $LogFile = New-Item -Path "$($env:appdata)\Deletion` Scheduler\log.txt" -Force }
@@ -202,33 +202,33 @@ function interval {
 	}
 	$Form.Controls.Add($ScheduleLabel)
 
-	$checkbox1 = new-object System.Windows.Forms.checkbox -Property @{
-		Location = new-object System.Drawing.Size(145, 75)
-		Size     = new-object System.Drawing.Size(145, 20)
+	$checkbox1 = New-Object System.Windows.Forms.checkbox -Property @{
+		Location = New-Object System.Drawing.Size(145, 75)
+		Size     = New-Object System.Drawing.Size(145, 20)
 		Text     = "One time"
 		Checked  = $false
 	}
 	$Form.Controls.Add($checkbox1)
 
-	$checkbox2 = new-object System.Windows.Forms.checkbox -Property @{
-		Location = new-object System.Drawing.Size(75, 75)
-		Size     = new-object System.Drawing.Size(60, 20)
+	$checkbox2 = New-Object System.Windows.Forms.checkbox -Property @{
+		Location = New-Object System.Drawing.Size(75, 75)
+		Size     = New-Object System.Drawing.Size(60, 20)
 		Text     = "Weekly"
 		Checked  = $false
 	}
 	$Form.Controls.Add($checkbox2)
 
-	$checkbox3 = new-object System.Windows.Forms.checkbox -Property @{
-		Location = new-object System.Drawing.Size(20, 75)
-		Size     = new-object System.Drawing.Size(50, 20)
+	$checkbox3 = New-Object System.Windows.Forms.checkbox -Property @{
+		Location = New-Object System.Drawing.Size(20, 75)
+		Size     = New-Object System.Drawing.Size(50, 20)
 		Text     = "Daily"
 		Checked  = $false
 	}
 	$Form.Controls.Add($checkbox3)
 
-	$checkbox4 = new-object System.Windows.Forms.checkbox -Property @{
-		Location = new-object System.Drawing.Size(20, 42)
-		Size     = new-object System.Drawing.Size(90, 20)
+	$checkbox4 = New-Object System.Windows.Forms.checkbox -Property @{
+		Location = New-Object System.Drawing.Size(20, 42)
+		Size     = New-Object System.Drawing.Size(90, 20)
 		Text     = "Current User"
 		Checked  = $true
 	}
@@ -319,10 +319,10 @@ else {
 	}
 	$TaskRegister = Register-ScheduledTask -TaskName "DeletionScheduler{$($last2parts -join "-" )}" -Description "Deleting files with creation date older than $time at $($OpenFileDialog.FileName)" -Trigger $TaskTrigger -Action $TaskAction -Force
 }
-$prompt = new-object -comobject wscript.shell 
+$prompt = New-Object -ComObject wscript.shell 
 $answer = $prompt.popup("Delete files in $path created before $time ?`n", 90, "Deletion Scheduler", 4)   
 if ($answer -eq 6) {
-	$files = Get-ChildItem -Path $path -Force -Recurse -exclude DSoptions.ini |
+	$files = Get-ChildItem -Path $path -Force -Recurse -Exclude DSoptions.ini |
 	Where-Object { $_.CreationTime -lt $time }
 	foreach ($File in $Files) { 
 		if ($Null -ne $File) { 
@@ -331,13 +331,13 @@ if ($answer -eq 6) {
 			Add-Content $LogFile $content
 		} 
 	} 
-	Get-ChildItem -Path $path -Force -exclude DSoptions.ini |
+	Get-ChildItem -Path $path -Force -Exclude DSoptions.ini |
 	Where-Object { $_.CreationTime -lt $time } |
 	Remove-Item  -Force -Recurse -ErrorAction SilentlyContinue -ErrorVariable removeErrors
-	$removeErrors | where-object { $_.Exception.Message -notlike '*it is being used by another process*' }
+	$removeErrors | Where-Object { $_.Exception.Message -notlike '*it is being used by another process*' }
 			
 }if ($answer -eq -1) {
-	$files = Get-ChildItem -Path $path -Force -Recurse -exclude DSoptions.ini |
+	$files = Get-ChildItem -Path $path -Force -Recurse -Exclude DSoptions.ini |
 	Where-Object { $_.CreationTime -lt $time }
 	foreach ($File in $Files) { 
 		if ($Null -ne $File) { 
@@ -346,9 +346,9 @@ if ($answer -eq 6) {
 			Add-Content $LogFile $content
 		} 
 	} 
-	Get-ChildItem -Path $path -Force -exclude DSoptions.ini |
+	Get-ChildItem -Path $path -Force -Exclude DSoptions.ini |
 	Where-Object { $_.CreationTime -lt $time } |
 	Remove-Item  -Force -Recurse -ErrorAction SilentlyContinue -ErrorVariable removeErrors
-	$removeErrors | where-object { $_.Exception.Message -notlike '*it is being used by another process*' }
+	$removeErrors | Where-Object { $_.Exception.Message -notlike '*it is being used by another process*' }
 }
 else { break }	

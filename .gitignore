@@ -1,4 +1,7 @@
 .out/
+bin/
+obj/
+*.pssproj
 Backup/
 Demo/
 DS_beta.ps1
